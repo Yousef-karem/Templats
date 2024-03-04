@@ -1,30 +1,30 @@
-struct SEG {
+struct item {
     ll sum = 0,lz = -1;
-    SEG() {
+    item() {
     }
-    SEG(ll x){
+    item(ll x){
         sum = x;
     }
 };
 struct segTree {
-    vector<SEG> seg;
+    vector<item> seg;
     int sz = 1,n,NO_OP = -1;
     segTree(int nn){
         n = nn;
         while (sz < nn)
             sz *= 2;
-        seg.assign(2 * sz , SEG());
+        seg.assign(2 * sz , item());
     }
 
-    SEG merge(SEG seg1, SEG seg2) {
-        SEG ret;
+    item merge(item seg1, item seg2) {
+        item ret;
         ret.sum = seg1.sum + seg2.sum;
         return ret;
     }
 
     void build(vector<int> &v,int x, int lx, int rx) {
         if (lx == rx) {
-            seg[x] = SEG(v[lx]);
+            seg[x] = item(v[lx]);
             return;
         }
         int mid = (lx + rx) / 2;
@@ -38,7 +38,7 @@ struct segTree {
         build(v,0, 0, n-1);
     }
 
-    void push(int x, int lx, int rx) {
+    void propagate(int x, int lx, int rx) {
         if (seg[x].lz != NO_OP) {
             seg[x].sum = seg[x].lz * (rx - lx + 1);
             int lf = 2*x+1,rt = 2*x+2;
@@ -51,12 +51,12 @@ struct segTree {
     }
 
     void update(int l,int r, ll val, int x, int lx, int rx) {
-        push(x, lx, rx);
+        propagate(x, lx, rx);
         if (l > rx || r < lx)
             return;
         if (l <= lx && r >= rx) {
             seg[x].lz += val;
-            push(x, lx, rx);
+            propagate(x, lx, rx);
             return;
         }
         int mid = (lx + rx) / 2,lf = 2*x+1,rt= 2*x+2;
@@ -69,19 +69,19 @@ struct segTree {
         update(l, r, val, 0, 0, n-1);
     }
 
-    SEG query(int l, int r, int x, int lx, int rx) {
-        push(x, lx, rx);
+    item query(int l, int r, int x, int lx, int rx) {
+        propagate(x, lx, rx);
         if (l <= lx && r >= rx)
             return seg[x];
         if (l > rx || r < lx)
-            return SEG();
+            return item();
 
         int mid = (lx + rx) / 2,lf = 2*x+1,rt = 2*x+2;
 
         return merge(query(l, r, lf, lx, mid) , query(l, r, rt, mid + 1, rx));
     }
 
-    SEG query(int l, int r) {
+    item query(int l, int r) {
         return query(l, r, 0, 0, n-1);
     }
 };
